@@ -1,25 +1,160 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Data Report - Course Project 1"
+author: "Akash Suresh"
+date: "July 10, 2016"
+output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-## Loading and preprocessing the data
+## Loading and Preprocessing Data
+
+The above mentioned data is loaded and preprocessed in the following manner. Initially, NA's are omitted for easy calculations of the total number of steps, mean and median.
+
+```{r data,message=F, warning=F}
+## Reading data
+myData <- read.csv("./activity.csv")
+
+## Load dplyr package
+library(dplyr)
+
+## Omit rows with NAs
+reqData <- filter(myData,!is.na(steps))
+```
+
+## Number of Steps per Day
+
+Grouping the data per day and using summarise() to calculate the number of steps taken per day. Since, the rows with NA are omitted, the total for each day is a valid numeric value.
+
+```{r daywise1,message=F, warning=F}
+## Grouping data by day
+groupByDay <- group_by(reqData,date)
+
+## Number of steps per day
+sumPerDay <- summarise(groupByDay,sum(steps, na.rm = TRUE))
+
+## Print sumPerDay
+library(knitr)
+kable(sumPerDay, format = "markdown", col.names = c("Date", "Steps"))
+```
+
+Mean of the number of steps across all days.
+```{r daywise2,message=F, warning=F}
+## Mean of the total number of steps taken per day
+meanPerDay <- mean(sumPerDay$`sum(steps, na.rm = TRUE)`)
+meanPerDay
+```
+
+Median of the number of steps across all days.
+```{r daywise3,message=F, warning=F}
+## Median of the total number of steps taken per day
+medianPerDay <- median(sumPerDay$`sum(steps, na.rm = TRUE)`)
+medianPerDay
+```
+
+Plotting a histogram of the total number of steps taken each day.
+```{r daywise4,message=F, warning=F}
+## Histogram of the total number of steps taken per day
+hist(sumPerDay$`sum(steps, na.rm = TRUE)`, breaks = nrow(sumPerDay), xlab = "Number of steps per day", main = "Histogram of total steps per day", col = "salmon")
+```
+
+## Average Daily Activity Pattern
+
+This section groups activity data based on 5-minute intervals. The following plot shows  5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+```{r intervalwise1,message=F, warning=F}
+## Grouping data by interval
+groupByInterval <- group_by(reqData,interval)
+
+## Number of steps per interval across all days
+sumPerInterval <- summarise(groupByInterval,sum(steps, na.rm = TRUE))
+
+## Plot of Activity vs Interval
+plot(x = sumPerInterval$interval, y = sumPerInterval$`sum(steps, na.rm = TRUE)`, xlab = "Interval", ylab = "Number of steps", main = "Activity vs Interval Plot", col = "red", type = "l")
+```
+
+The interval that contains the maximum number of steps on average across all days.
+```{r intervalwise2, message=F, warning=F}
+## Find max interval with max steps
+orderedData <- arrange(sumPerInterval,desc(`sum(steps, na.rm = TRUE)`))
+orderedData$interval[1]
+```
+
+## Imputing Missing Values
+
+Until this secion, rows with NAs were ignored. In this section NAs will be imputed with median values. Specifically, median of the 5-minute interval will be used.
+
+Let's use the myData variable to calculate the number of NAs in the data, since it is unprocessed. 
+```{r impute1,message=F, warning=F}
+## Generate boolean that gives information about NAs
+naOrNot <- is.na(myData$steps)
+sum(naOrNot)
+```
+
+Replacing the NAs as mentioned above.
+```{r impute2,message=F, warning=F}
+## Find median across all intervals for all dates
+temp <- split(myData[,c(1.3)], myData$interval)
+temp2 <- sapply(temp, median, na.rm = TRUE)
+
+## Combine median information with DataFrame
+imputedData <- cbind(myData, temp2)
+
+## Impute NAs with median
+imputedData <- transform(imputedData, steps = ifelse(is.na(steps), temp2, steps))
+```
 
 
+Plotting a histogram of the total number of steps taken each day, with NAs replaced.
+```{r impute3,message=F, warning=F}
+## Grouping data by day
+groupByDay <- group_by(imputedData,date)
 
-## What is mean total number of steps taken per day?
+## Number of steps per day
+sumPerDay <- summarise(groupByDay,sum(steps))
 
+## Histogram of the total number of steps taken per day
+hist(sumPerDay$`sum(steps)`, breaks = nrow(sumPerDay), xlab = "Number of steps per day", main = "Histogram of total steps per day", col = "salmon")
+```
 
+Mean of the number of steps across all days (with imputed data).
+```{r impute4,message=F, warning=F}
+## Mean of the total number of steps taken per day
+meanPerDay <- mean(sumPerDay$`sum(steps)`)
+meanPerDay
+```
 
-## What is the average daily activity pattern?
+Median of the number of steps across all days (with imputed data).
+```{r impute5,message=F, warning=F}
+## Median of the total number of steps taken per day
+medianPerDay <- median(sumPerDay$`sum(steps)`)
+medianPerDay
+```
 
+As expected, after the data s imputed the mean and median values change. Since a lot of the median values are small and even 0, the mean and median have decreased now. This makes sense because alot of the newly added values (ones that were NAs) are much smaller than the original mean and median.
 
+## Weeday vs Weekend Trend
 
-## Imputing missing values
+In the below code, a new factor variable, weekday, is initialized with 0 or 1. 1 stands for weekend and 0 for weekday. Also, the new vector is combined the imputed data.
 
+```{r Weekday1,message=F, warning=F}
+## A new vector that contains weekday info
+weekday <- as.factor(ifelse(weekdays(as.Date(imputedData$date))%in%c("Saturday", "Sunday"), 1, 0))
 
+## Combine with existing data
+imputedData <- cbind(imputedData, weekday)
 
-## Are there differences in activity patterns between weekdays and weekends?
+## Group data by weekday and interval
+temp3 <- group_by(imputedData, weekday, interval)
+
+## Obtain mean for the same groups
+temp4 <- summarise(temp3, mean(steps))
+
+## Ploting the required graph
+library(ggplot2)
+
+ggplot(temp4, aes(x = interval, y = `mean(steps)`, colour = weekday)) + geom_smooth() + xlab("Interval") + ylab("Average number of steps taken")
+```
+
+As mentioned above, the weekday factor variable indicates whether the given date is a weekend or not. Weekends are identified by 1. From the above plot we see that the average trend observed in weekdays and weekends are different. The highlighted portion around the curves show the confidence interval.
