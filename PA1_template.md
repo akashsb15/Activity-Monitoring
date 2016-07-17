@@ -1,3 +1,5 @@
+Note - the figures do not appear in the .md file for some reason, however, they have been placed in figures/
+
 Loading and Preprocessing Data
 ------------------------------
 
