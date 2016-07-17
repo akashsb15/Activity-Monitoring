@@ -140,7 +140,8 @@ In the below code, a new factor variable, weekday, is initialized with 0 or 1. 1
 
 ```{r Weekday1,message=F, warning=F}
 ## A new vector that contains weekday info
-weekday <- as.factor(ifelse(weekdays(as.Date(imputedData$date))%in%c("Saturday", "Sunday"), 1, 0))
+weekday <- factor(x=ifelse(weekdays(as.Date(imputedData$date))%in%c("Saturday", "Sunday"), 1, 0), labels = 
+                    c("Weekday", "Weekend"))
 
 ## Combine with existing data
 imputedData <- cbind(imputedData, weekday)
@@ -152,9 +153,11 @@ temp3 <- group_by(imputedData, weekday, interval)
 temp4 <- summarise(temp3, mean(steps))
 
 ## Ploting the required graph
-library(ggplot2)
 
-ggplot(temp4, aes(x = interval, y = `mean(steps)`, colour = weekday)) + geom_smooth() + xlab("Interval") + ylab("Average number of steps taken")
+library(lattice)
+
+temp5 <- aggregate(`mean(steps)` ~ weekday + interval, temp4, mean)
+xyplot(`mean(steps)` ~ interval | weekday, layout = c(1, 2), xlab="Interval", ylab="Average Number of Steps", type="l", data=temp5, main = "Trends in Weekend Vs Weekday")
 ```
 
 As mentioned above, the weekday factor variable indicates whether the given date is a weekend or not. Weekends are identified by 1. From the above plot we see that the average trend observed in weekdays and weekends are different. The highlighted portion around the curves show the confidence interval.

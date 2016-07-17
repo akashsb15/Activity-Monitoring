@@ -376,7 +376,8 @@ or 1. 1 stands for weekend and 0 for weekday. Also, the new vector is
 combined the imputed data.
 
     ## A new vector that contains weekday info
-    weekday <- as.factor(ifelse(weekdays(as.Date(imputedData$date))%in%c("Saturday", "Sunday"), 1, 0))
+    weekday <- factor(x=ifelse(weekdays(as.Date(imputedData$date))%in%c("Saturday", "Sunday"), 1, 0), labels = 
+                        c("Weekday", "Weekend"))
 
     ## Combine with existing data
     imputedData <- cbind(imputedData, weekday)
@@ -388,9 +389,11 @@ combined the imputed data.
     temp4 <- summarise(temp3, mean(steps))
 
     ## Ploting the required graph
-    library(ggplot2)
 
-    ggplot(temp4, aes(x = interval, y = `mean(steps)`, colour = weekday)) + geom_smooth() + xlab("Interval") + ylab("Average number of steps taken")
+    library(lattice)
+
+    temp5 <- aggregate(`mean(steps)` ~ weekday + interval, temp4, mean)
+    xyplot(`mean(steps)` ~ interval | weekday, layout = c(1, 2), xlab="Interval", ylab="Average Number of Steps", type="l", data=temp5, main = "Trends in Weekend Vs Weekday")
 
 ![](PA1_template_files/figure-markdown_strict/Weekday1-1.png)
 
