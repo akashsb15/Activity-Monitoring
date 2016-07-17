@@ -15,7 +15,7 @@ The above mentioned data is loaded and preprocessed in the following manner. Ini
 
 ```{r data,message=F, warning=F}
 ## Reading data
-myData <- read.csv("./activity.csv")
+myData <- read.csv("../activity.csv")
 
 ## Load dplyr package
 library(dplyr)
