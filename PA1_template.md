@@ -275,7 +275,7 @@ Plotting a histogram of the total number of steps taken each day.
     ## Histogram of the total number of steps taken per day
     hist(sumPerDay$`sum(steps, na.rm = TRUE)`, breaks = nrow(sumPerDay), xlab = "Number of steps per day", main = "Histogram of total steps per day", col = "salmon")
 
-![](PA1_template_files/figure-markdown_strict/daywise4-1.png)
+![](figures/fig1.png)
 
 Average Daily Activity Pattern
 ------------------------------
@@ -293,7 +293,7 @@ of steps taken, averaged across all days (y-axis)
     ## Plot of Activity vs Interval
     plot(x = sumPerInterval$interval, y = sumPerInterval$`sum(steps, na.rm = TRUE)`, xlab = "Interval", ylab = "Number of steps", main = "Activity vs Interval Plot", col = "red", type = "l")
 
-![](PA1_template_files/figure-markdown_strict/intervalwise1-1.png)
+![](figures/fig2.png)
 
 The interval that contains the maximum number of steps on average across
 all days.
@@ -344,7 +344,7 @@ NAs replaced.
     ## Histogram of the total number of steps taken per day
     hist(sumPerDay$`sum(steps)`, breaks = nrow(sumPerDay), xlab = "Number of steps per day", main = "Histogram of total steps per day", col = "salmon")
 
-![](PA1_template_files/figure-markdown_strict/impute3-1.png)
+![](figures/fig3.png)
 
 Mean of the number of steps across all days (with imputed data).
 
@@ -395,7 +395,7 @@ combined the imputed data.
     temp5 <- aggregate(`mean(steps)` ~ weekday + interval, temp4, mean)
     xyplot(`mean(steps)` ~ interval | weekday, layout = c(1, 2), xlab="Interval", ylab="Average Number of Steps", type="l", data=temp5, main = "Trends in Weekend Vs Weekday")
 
-![](PA1_template_files/figure-markdown_strict/Weekday1-1.png)
+![](figures/fig4.png)
 
 As mentioned above, the weekday factor variable indicates whether the
 given date is a weekend or not. Weekends are identified by 1. From the
